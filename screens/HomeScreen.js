@@ -1,6 +1,6 @@
 import * as WebBrowser from 'expo-web-browser';
 import React, { Component } from 'react';
-import MapView, { Polygon } from 'react-native-maps';
+import MapView, { Polygon, Circle } from 'react-native-maps';
 import {
   Image,
   Platform,
@@ -15,7 +15,11 @@ import {
 
 import Mine from './Mine';
 import { MonoText } from '../components/StyledText';
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
 
+
+const RADIUS = 50;
 
 export default class HomeScreen extends Component {
 
@@ -23,9 +27,17 @@ export default class HomeScreen extends Component {
   //   this.setState({ region });
   // }
 
+
+
   constructor(props) {
     super(props)
     this.state = {
+      location: null,
+      centre: {
+        latitude: null,
+        longitude: null
+      },
+      errorMessage: null,
       minePolygon: []
     }
 
@@ -38,22 +50,60 @@ export default class HomeScreen extends Component {
     this.setState({ minePolygon: tempArr })
   }
 
+  componentWillMount() {
+    if (Platform.OS === 'android' && !Constants.isDevice) {
+      this.setState({
+        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
+      });
+    } else {
+      this._getLocationAsync();
+    }
+  }
+
+  _getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      this.setState({
+        errorMessage: 'Permission to access location was denied',
+      });
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    let latLong = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude
+    }
+    this.setState({ location });
+    this.setState({ centre: latLong })
+    alert(JSON.stringify(this.state.centre, null, 2))
+  };
+
   render() {
     return (
-      <View style={styles.container}>
-
-        <MapView
-          onPress={this.draw}
-          style={styles.mapStyle}
-        // initialRegion={{
-        //   latitude: 37.78825,
-        //   longitude: -122.4324,
-        //   latitudeDelta: 0.0922,
-        //   longitudeDelta: 0.0421,
-        // }}
-        >
-          {/* <Mine area={this.state.minePolygon} /> fix */}
-        </MapView>
+      
+        <View style={styles.container}>
+          <MapView
+            onPress={this.draw}
+            style={styles.mapStyle}
+          // initialRegion={{
+          //   latitude: 37.78825,
+          //   longitude: -122.4324,
+          //   latitudeDelta: 0.0922,
+          //   longitudeDelta: 0.0421,
+          // }}
+          >
+            {/* <Circle center={this.state.centre}/> */}
+            {/* <Mine area={this.state.minePolygon} /> */}
+            <MapView.Circle
+              key={(this.state.centre.currentLongitude + this.state.centre.currentLongitude).toString()}
+              center={this.state.centre}
+              radius={RADIUS}
+              strokeWidth={1}
+              strokeColor={'#1a66ff'}
+              fillColor={'rgba(230,238,255,0.5)'}
+            // onRegionChangeComplete = { this.onRegionChangeComplete.bind(this) }
+            />
+          </MapView>
       </View>
 
     );
