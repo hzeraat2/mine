@@ -1,6 +1,6 @@
 import * as WebBrowser from 'expo-web-browser';
-import React from 'react';
-import MapView, { Polyline } from 'react-native-maps';
+import React, { Component } from 'react';
+import MapView, { Polygon } from 'react-native-maps';
 import {
   Image,
   Platform,
@@ -13,107 +13,51 @@ import {
   Marker
 } from 'react-native';
 
+import Mine from './Mine';
 import { MonoText } from '../components/StyledText';
 
-export default function HomeScreen() {
 
-  getInitialState: () => {
-    return {
-      region: {
-        latitude: 37.78825,
-        longitude: -122.4324,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      },
-    };
+export default class HomeScreen extends Component {
+
+  // onRegionChange = (region) => {
+  //   this.setState({ region });
+  // }
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      minePolygon: []
+    }
+
   }
 
-  onRegionChange: (region) => {
-    this.setState({ region });
+  draw = e => {
+    let tempArr = []
+    tempArr = this.state.minePolygon
+    tempArr.push(e.nativeEvent.coordinate)
+    this.setState({ minePolygon: tempArr })
   }
 
-  return (
-    <View style={styles.container}>
-      <MapView style={styles.mapStyle}
-        initialRegion={{
-          latitude: 37.78825,
-          longitude: -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}>
-        <Polyline
-          coordinates={[
-            { latitude: 37.8025259, longitude: -122.4351431 },
-            { latitude: 37.7896386, longitude: -122.421646 },
-            { latitude: 37.7665248, longitude: -122.4161628 },
-            { latitude: 37.7734153, longitude: -122.4577787 },
-            { latitude: 37.7948605, longitude: -122.4596065 },
-            { latitude: 37.8025259, longitude: -122.4351431 }
-          ]}
-          strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-          strokeColors={[
-            '#7F0000',
-            '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
-            '#B24112',
-            '#E5845C',
-            '#238C23',
-            '#7F0000'
-          ]}
-          strokeWidth={6}
-        />
-      </MapView>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}>
-        <View style={styles.welcomeContainer}>
-          <Image
-            source={
-              __DEV__
-                ? require('../assets/images/robot-dev.png')
-                : require('../assets/images/robot-prod.png')
-            }
-            style={styles.welcomeImage}
-          />
-        </View>
+  render() {
+    return (
+      <View style={styles.container}>
 
-        <View style={styles.getStartedContainer}>
-          <DevelopmentModeNotice />
-
-          <Text style={styles.getStartedText}>Get started by opening</Text>
-
-          <View
-            style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-            <MonoText>screens/HomeScreen.js</MonoText>
-          </View>
-
-          <Text style={styles.getStartedText}>
-            Change this text and your app will automatically reload.
-          </Text>
-        </View>
-
-        <View style={styles.helpContainer}>
-          <TouchableOpacity onPress={handleHelpPress} style={styles.helpLink}>
-            <Text style={styles.helpLinkText}>
-              Help, it didn’t automatically reload!
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      <View style={styles.tabBarInfoContainer}>
-        <Text style={styles.tabBarInfoText}>
-          This is a tab bar. You can edit it in:
-        </Text>
-
-        <View
-          style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-          <MonoText style={styles.codeHighlightText}>
-            navigation/MainTabNavigator.js
-          </MonoText>
-        </View>
+        <MapView
+          onPress={this.draw}
+          style={styles.mapStyle}
+        // initialRegion={{
+        //   latitude: 37.78825,
+        //   longitude: -122.4324,
+        //   latitudeDelta: 0.0922,
+        //   longitudeDelta: 0.0421,
+        // }}
+        >
+          {/* <Mine area={this.state.minePolygon} /> fix */}
+        </MapView>
       </View>
-    </View>
-  );
+
+    );
+  }
 }
 
 HomeScreen.navigationOptions = {
